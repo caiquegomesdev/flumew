@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Flume Water - Monitor de Água</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/umd/lucide.js"></script>
     <style>
         * {
             margin: 0;
@@ -62,6 +61,12 @@
             height: 12px;
             background: #10b981;
             border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
         }
 
         .status span {
@@ -75,10 +80,16 @@
 
         .page {
             display: none;
+            animation: fadeIn 0.3s ease-in-out;
         }
 
         .page.active {
             display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .card {
@@ -88,12 +99,47 @@
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
             border: 1px solid #e5e7eb;
             margin-bottom: 24px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         }
 
         .current-usage {
             background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
             color: white;
             margin-bottom: 24px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .current-usage:hover {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+        }
+
+        .refresh-button {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            padding: 8px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.2s;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .refresh-button:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: rotate(180deg);
         }
 
         .current-usage-header {
@@ -119,6 +165,7 @@
             font-size: 48px;
             font-weight: bold;
             line-height: 1;
+            transition: all 0.3s ease;
         }
 
         .usage-unit {
@@ -131,6 +178,11 @@
             border-radius: 8px;
             padding: 12px;
             margin-top: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .usage-today:hover {
+            background: rgba(255, 255, 255, 0.3);
         }
 
         .usage-today-label {
@@ -156,6 +208,13 @@
             padding: 16px;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
             border: 1px solid #e5e7eb;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .stat-card:hover {
+            transform: scale(1.02);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         }
 
         .stat-label {
@@ -190,6 +249,10 @@
             font-weight: 600;
             color: #111827;
             margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            position: relative;
         }
 
         .location-item {
@@ -197,14 +260,15 @@
             align-items: center;
             justify-content: space-between;
             margin-bottom: 12px;
-            padding-bottom: 12px;
-            border-bottom: 1px solid #f3f4f6;
+            padding: 12px;
+            border-radius: 8px;
+            transition: all 0.2s;
+            cursor: pointer;
         }
 
-        .location-item:last-child {
-            border-bottom: none;
-            margin-bottom: 0;
-            padding-bottom: 0;
+        .location-item:hover {
+            background: #f3f4f6;
+            transform: translateX(4px);
         }
 
         .location-info h4 {
@@ -229,12 +293,14 @@
             background: #e5e7eb;
             border-radius: 4px;
             overflow: hidden;
+            transition: all 0.3s;
         }
 
         .progress-fill {
             height: 100%;
             background: #3b82f6;
             border-radius: 4px;
+            transition: width 0.5s ease;
         }
 
         .percentage {
@@ -254,6 +320,13 @@
             border: 1px solid #fcd34d;
             border-radius: 8px;
             margin-bottom: 12px;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .alert:hover {
+            background: #fde68a;
+            transform: translateX(4px);
         }
 
         .alert:last-child {
@@ -284,6 +357,12 @@
             align-items: center;
             gap: 16px;
             margin-bottom: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .chart-item:hover {
+            transform: translateX(4px);
         }
 
         .chart-day {
@@ -300,6 +379,11 @@
             border-radius: 8px;
             overflow: hidden;
             position: relative;
+            transition: all 0.3s;
+        }
+
+        .chart-bar:hover {
+            height: 20px;
         }
 
         .chart-fill {
@@ -313,6 +397,7 @@
             color: white;
             font-size: 12px;
             font-weight: 500;
+            transition: all 0.3s;
         }
 
         .comparison-grid {
@@ -320,6 +405,18 @@
             grid-template-columns: 1fr 1fr 1fr;
             gap: 16px;
             text-align: center;
+        }
+
+        .comparison-item {
+            padding: 16px;
+            border-radius: 8px;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .comparison-item:hover {
+            background: #f3f4f6;
+            transform: scale(1.05);
         }
 
         .comparison-value {
@@ -354,12 +451,19 @@
             background: #e5e7eb;
             border-radius: 6px;
             overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .goal-bar:hover {
+            height: 16px;
         }
 
         .goal-fill {
             height: 100%;
             background: #10b981;
             border-radius: 6px;
+            transition: width 0.5s ease;
         }
 
         .setting-item {
@@ -368,6 +472,14 @@
             justify-content: space-between;
             padding: 16px 0;
             border-bottom: 1px solid #f3f4f6;
+            transition: all 0.2s;
+        }
+
+        .setting-item:hover {
+            background: #f9fafb;
+            margin: 0 -16px;
+            padding: 16px;
+            border-radius: 8px;
         }
 
         .setting-item:last-child {
@@ -402,6 +514,13 @@
             border: 1px solid #d1d5db;
             border-radius: 8px;
             font-size: 16px;
+            transition: all 0.2s;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
         }
 
         .device-card {
@@ -412,6 +531,13 @@
             background: #ecfdf5;
             border: 1px solid #bbf7d0;
             border-radius: 8px;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .device-card:hover {
+            background: #d1fae5;
+            transform: scale(1.02);
         }
 
         .device-info h4 {
@@ -429,6 +555,7 @@
             height: 12px;
             background: #10b981;
             border-radius: 50%;
+            animation: pulse 2s infinite;
         }
 
         .bottom-nav {
@@ -441,6 +568,7 @@
             background: white;
             border-top: 1px solid #e5e7eb;
             display: flex;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
         }
 
         .nav-button {
@@ -451,18 +579,30 @@
             background: none;
             color: #6b7280;
             cursor: pointer;
-            transition: color 0.2s;
+            transition: all 0.2s;
+            position: relative;
         }
 
         .nav-button.active {
             color: #2563eb;
+            background: rgba(37, 99, 235, 0.1);
         }
 
-        .nav-button i {
-            display: block;
+        .nav-button:hover {
+            background: rgba(107, 114, 128, 0.1);
+        }
+
+        .nav-button.active:hover {
+            background: rgba(37, 99, 235, 0.15);
+        }
+
+        .nav-icon {
             width: 24px;
             height: 24px;
             margin: 0 auto 4px;
+            stroke: currentColor;
+            stroke-width: 2;
+            fill: none;
         }
 
         .nav-button span {
@@ -474,6 +614,108 @@
             width: 20px;
             height: 20px;
             accent-color: #2563eb;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .checkbox:hover {
+            transform: scale(1.1);
+        }
+
+        .icon {
+            width: 20px;
+            height: 20px;
+            stroke: currentColor;
+            stroke-width: 2;
+            fill: none;
+        }
+
+        .btn {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        .btn:hover {
+            background: #2563eb;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: #6b7280;
+        }
+
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+
+        .toast {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            background: #10b981;
+            color: white;
+            padding: 12px 16px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 24px;
+            border-radius: 16px;
+            max-width: 400px;
+            margin: 20px;
+            animation: modalSlide 0.3s ease;
+        }
+
+        @keyframes modalSlide {
+            from { transform: scale(0.8) translateY(-20px); opacity: 0; }
+            to { transform: scale(1) translateY(0); opacity: 1; }
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            background: #ef4444;
+            color: white;
+            font-size: 10px;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         @media (max-width: 480px) {
@@ -487,6 +729,10 @@
             
             .stats-grid {
                 gap: 12px;
+            }
+            
+            .usage-large {
+                font-size: 36px;
             }
         }
     </style>
@@ -512,15 +758,25 @@
             <!-- Dashboard Page -->
             <div id="dashboard" class="page active">
                 <!-- Current Usage Card -->
-                <div class="card current-usage">
+                <div class="card current-usage" onclick="showUsageModal()">
+                    <button class="refresh-button" onclick="event.stopPropagation(); refreshData()">
+                        <svg class="icon" viewBox="0 0 24 24">
+                            <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
+                            <path d="M21 3v5h-5"/>
+                            <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
+                            <path d="M3 21v-5h5"/>
+                        </svg>
+                    </button>
                     <div class="current-usage-header">
                         <div class="current-usage-title">
-                            <i data-lucide="droplets"></i>
+                            <svg class="icon" viewBox="0 0 24 24">
+                                <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/>
+                            </svg>
                             <span>Uso Atual</span>
                         </div>
                         <div class="current-usage-value">
                             <div class="usage-large" id="current-usage">2.3</div>
-                            <div class="usage-unit">L/min</div>
+                            <div class="usage-unit" id="current-unit">L/min</div>
                         </div>
                     </div>
                     <div class="usage-today">
@@ -531,95 +787,50 @@
 
                 <!-- Quick Stats -->
                 <div class="stats-grid">
-                    <div class="stat-card">
+                    <div class="stat-card" onclick="showStatsModal('week')">
                         <div class="stat-label">Esta Semana</div>
-                        <div class="stat-value">982 L</div>
+                        <div class="stat-value" id="weekly-usage">982 L</div>
                         <div class="stat-change">
-                            <i data-lucide="trending-up"></i>
+                            <svg class="icon" viewBox="0 0 24 24">
+                                <path d="M3 17l6-6 4 4 8-8"/>
+                                <path d="M14 7h7v7"/>
+                            </svg>
                             -12% vs anterior
                         </div>
                     </div>
-                    <div class="stat-card">
+                    <div class="stat-card" onclick="showStatsModal('month')">
                         <div class="stat-label">Este Mês</div>
                         <div class="stat-value" id="monthly-usage">3420 L</div>
-                        <div class="stat-meta">Meta: 4000 L</div>
+                        <div class="stat-meta">Meta: <span id="monthly-goal">4000 L</span></div>
                     </div>
                 </div>
 
                 <!-- Usage by Location -->
                 <div class="card">
-                    <h3 class="section-title">Uso por Ambiente</h3>
+                    <h3 class="section-title">
+                        <svg class="icon" viewBox="0 0 24 24">
+                            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                            <polyline points="9,22 9,12 15,12 15,22"/>
+                        </svg>
+                        Uso por Ambiente
+                    </h3>
                     <div id="locations-list">
-                        <div class="location-item">
-                            <div class="location-info">
-                                <h4>Cozinha</h4>
-                                <p>34.2 L hoje</p>
-                            </div>
-                            <div class="location-stats">
-                                <div class="progress-bar">
-                                    <div class="progress-fill" style="width: 27%"></div>
-                                </div>
-                                <div class="percentage">27%</div>
-                            </div>
-                        </div>
-                        <div class="location-item">
-                            <div class="location-info">
-                                <h4>Banheiro Principal</h4>
-                                <p>45.6 L hoje</p>
-                            </div>
-                            <div class="location-stats">
-                                <div class="progress-bar">
-                                    <div class="progress-fill" style="width: 36%"></div>
-                                </div>
-                                <div class="percentage">36%</div>
-                            </div>
-                        </div>
-                        <div class="location-item">
-                            <div class="location-info">
-                                <h4>Banheiro Social</h4>
-                                <p>28.1 L hoje</p>
-                            </div>
-                            <div class="location-stats">
-                                <div class="progress-bar">
-                                    <div class="progress-fill" style="width: 22%"></div>
-                                </div>
-                                <div class="percentage">22%</div>
-                            </div>
-                        </div>
-                        <div class="location-item">
-                            <div class="location-info">
-                                <h4>Lavanderia</h4>
-                                <p>19.1 L hoje</p>
-                            </div>
-                            <div class="location-stats">
-                                <div class="progress-bar">
-                                    <div class="progress-fill" style="width: 15%"></div>
-                                </div>
-                                <div class="percentage">15%</div>
-                            </div>
-                        </div>
+                        <!-- Will be populated by JavaScript -->
                     </div>
                 </div>
 
                 <!-- Alerts -->
                 <div class="card">
                     <h3 class="section-title">
-                        <i data-lucide="bell"></i>
+                        <svg class="icon" viewBox="0 0 24 24">
+                            <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/>
+                            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                        </svg>
                         Alertas Recentes
+                        <span class="notification-badge" id="alert-count">2</span>
                     </h3>
-                    <div class="alert">
-                        <i data-lucide="alert-triangle"></i>
-                        <div class="alert-content">
-                            <div class="alert-message">Uso elevado detectado no banheiro principal</div>
-                            <div class="alert-time">14:32</div>
-                        </div>
-                    </div>
-                    <div class="alert">
-                        <i data-lucide="alert-triangle"></i>
-                        <div class="alert-content">
-                            <div class="alert-message">Relatório mensal disponível</div>
-                            <div class="alert-time">09:15</div>
-                        </div>
+                    <div id="alerts-list">
+                        <!-- Will be populated by JavaScript -->
                     </div>
                 </div>
             </div>
@@ -627,79 +838,45 @@
             <!-- Analytics Page -->
             <div id="analytics" class="page">
                 <div class="card">
-                    <h3 class="section-title">Consumo Semanal</h3>
-                    <div class="weekly-chart">
-                        <div class="chart-item">
-                            <div class="chart-day">Seg</div>
-                            <div class="chart-bar">
-                                <div class="chart-fill" style="width: 85%">145</div>
-                            </div>
-                        </div>
-                        <div class="chart-item">
-                            <div class="chart-day">Ter</div>
-                            <div class="chart-bar">
-                                <div class="chart-fill" style="width: 78%">132</div>
-                            </div>
-                        </div>
-                        <div class="chart-item">
-                            <div class="chart-day">Qua</div>
-                            <div class="chart-bar">
-                                <div class="chart-fill" style="width: 75%">128</div>
-                            </div>
-                        </div>
-                        <div class="chart-item">
-                            <div class="chart-day">Qui</div>
-                            <div class="chart-bar">
-                                <div class="chart-fill" style="width: 92%">156</div>
-                            </div>
-                        </div>
-                        <div class="chart-item">
-                            <div class="chart-day">Sex</div>
-                            <div class="chart-bar">
-                                <div class="chart-fill" style="width: 79%">134</div>
-                            </div>
-                        </div>
-                        <div class="chart-item">
-                            <div class="chart-day">Sáb</div>
-                            <div class="chart-bar">
-                                <div class="chart-fill" style="width: 98%">167</div>
-                            </div>
-                        </div>
-                        <div class="chart-item">
-                            <div class="chart-day">Dom</div>
-                            <div class="chart-bar">
-                                <div class="chart-fill" style="width: 84%">143</div>
-                            </div>
-                        </div>
+                    <h3 class="section-title">
+                        <svg class="icon" viewBox="0 0 24 24">
+                            <path d="M3 3v18h18"/>
+                            <path d="M18.7 8l-5.1 5.2-2.8-2.7L7 14.3"/>
+                        </svg>
+                        Consumo Semanal
+                    </h3>
+                    <div class="weekly-chart" id="weekly-chart">
+                        <!-- Will be populated by JavaScript -->
                     </div>
                 </div>
 
                 <div class="card">
-                    <h3 class="section-title">Comparativo Mensal</h3>
-                    <div class="comparison-grid">
-                        <div>
-                            <div class="comparison-value">3,420</div>
-                            <div class="comparison-label">Este Mês</div>
-                        </div>
-                        <div>
-                            <div class="comparison-value">3,890</div>
-                            <div class="comparison-label">Mês Anterior</div>
-                        </div>
-                        <div>
-                            <div class="comparison-value positive">-12%</div>
-                            <div class="comparison-label">Economia</div>
-                        </div>
+                    <h3 class="section-title">
+                        <svg class="icon" viewBox="0 0 24 24">
+                            <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+                        </svg>
+                        Comparativo Mensal
+                    </h3>
+                    <div class="comparison-grid" id="comparison-grid">
+                        <!-- Will be populated by JavaScript -->
                     </div>
                 </div>
 
                 <div class="card">
-                    <h3 class="section-title">Metas de Economia</h3>
+                    <h3 class="section-title">
+                        <svg class="icon" viewBox="0 0 24 24">
+                            <circle cx="12" cy="12" r="10"/>
+                            <path d="M16 12l-4-4-4 4"/>
+                            <path d="M12 16V8"/>
+                        </svg>
+                        Metas de Economia
+                    </h3>
                     <div class="goal-item">
                         <div class="goal-header">
-                            <span>Meta Mensal (4000 L)</span>
+                            <span>Meta Mensal (<span id="goal-text">4000 L</span>)</span>
                             <span id="goal-percentage">86%</span>
                         </div>
-                        <div class="goal-bar">
+                        <div class="goal-bar" onclick="editGoal()">
                             <div class="goal-fill" id="goal-progress" style="width: 86%"></div>
                         </div>
                     </div>
@@ -709,51 +886,68 @@
             <!-- Settings Page -->
             <div id="settings" class="page">
                 <div class="card">
-                    <h3 class="section-title">Configurações de Alerta</h3>
+                    <h3 class="section-title">
+                        <svg class="icon" viewBox="0 0 24 24">
+                            <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/>
+                            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                        </svg>
+                        Configurações de Alerta
+                    </h3>
                     <div class="setting-item">
                         <div class="setting-info">
                             <h4>Uso Elevado</h4>
                             <p>Alertar quando uso exceder limite</p>
                         </div>
-                        <input type="checkbox" class="checkbox" checked>
+                        <input type="checkbox" class="checkbox" id="alert-high-usage" checked onchange="saveSettings()">
                     </div>
                     <div class="setting-item">
                         <div class="setting-info">
                             <h4>Vazamentos</h4>
                             <p>Detectar possíveis vazamentos</p>
                         </div>
-                        <input type="checkbox" class="checkbox" checked>
+                        <input type="checkbox" class="checkbox" id="alert-leaks" checked onchange="saveSettings()">
                     </div>
                     <div class="setting-item">
                         <div class="setting-info">
                             <h4>Relatórios Semanais</h4>
                             <p>Receber resumo por email</p>
                         </div>
-                        <input type="checkbox" class="checkbox">
+                        <input type="checkbox" class="checkbox" id="weekly-reports" onchange="saveSettings()">
                     </div>
                 </div>
 
                 <div class="card">
-                    <h3 class="section-title">Preferências</h3>
+                    <h3 class="section-title">
+                        <svg class="icon" viewBox="0 0 24 24">
+                            <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
+                            <circle cx="12" cy="12" r="3"/>
+                        </svg>
+                        Preferências
+                    </h3>
                     <div class="form-group">
                         <label class="form-label">Unidade de Medida</label>
-                        <select class="form-control">
-                            <option>Litros (L)</option>
-                            <option>Galões (gal)</option>
+                        <select class="form-control" id="unit-selector" onchange="changeUnit()">
+                            <option value="L">Litros (L)</option>
+                            <option value="gal">Galões (gal)</option>
                         </select>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Meta Mensal de Consumo</label>
-                        <input type="number" class="form-control" placeholder="4000">
+                        <input type="number" class="form-control" id="monthly-goal-input" placeholder="4000" onchange="updateGoal()">
                     </div>
                 </div>
 
                 <div class="card">
-                    <h3 class="section-title">Dispositivos</h3>
-                    <div class="device-card">
+                    <h3 class="section-title">
+                        <svg class="icon" viewBox="0 0 24 24">
+                            <path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                        </svg>
+                        Dispositivos
+                    </h3>
+                    <div class="device-card" onclick="toggleDevice()">
                         <div class="device-info">
                             <h4>Sensor Principal</h4>
-                            <p>Conectado</p>
+                            <p id="device-status">Conectado</p>
                         </div>
                         <div class="device-status"></div>
                     </div>
@@ -764,28 +958,97 @@
         <!-- Bottom Navigation -->
         <div class="bottom-nav">
             <button class="nav-button active" onclick="showPage('dashboard')">
-                <i data-lucide="home"></i>
+                <svg class="nav-icon" viewBox="0 0 24 24">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                    <polyline points="9,22 9,12 15,12 15,22"/>
+                </svg>
                 <span>Início</span>
             </button>
             <button class="nav-button" onclick="showPage('analytics')">
-                <i data-lucide="bar-chart-3"></i>
+                <svg class="nav-icon" viewBox="0 0 24 24">
+                    <path d="M3 3v18h18"/>
+                    <path d="M18.7 8l-5.1 5.2-2.8-2.7L7 14.3"/>
+                </svg>
                 <span>Análises</span>
             </button>
             <button class="nav-button" onclick="showPage('settings')">
-                <i data-lucide="settings"></i>
+                <svg class="nav-icon" viewBox="0 0 24 24">
+                    <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
+                    <circle cx="12" cy="12" r="3"/>
+                </svg>
                 <span>Configurações</span>
             </button>
+        </div>
+
+        <!-- Toast Notification -->
+        <div class="toast" id="toast"></div>
+
+        <!-- Modal -->
+        <div class="modal" id="modal" onclick="closeModal()">
+            <div class="modal-content" onclick="event.stopPropagation()">
+                <h3 id="modal-title">Detalhes do Consumo</h3>
+                <div id="modal-body">
+                    <!-- Modal content will be populated by JavaScript -->
+                </div>
+                <button class="btn" onclick="closeModal()" style="margin-top: 16px;">Fechar</button>
+            </div>
         </div>
     </div>
 
     <script>
-        // Initialize Lucide icons
-        lucide.createIcons();
+        // App State
+        let appState = {
+            currentUsage: 2.3,
+            dailyUsage: 127,
+            weeklyUsage: 982,
+            monthlyUsage: 3420,
+            monthlyGoal: 4000,
+            unit: 'L',
+            settings: {
+                alertHighUsage: true,
+                alertLeaks: true,
+                weeklyReports: false
+            },
+            locations: [
+                { name: 'Cozinha', usage: 34.2, percentage: 27 },
+                { name: 'Banheiro Principal', usage: 45.6, percentage: 36 },
+                { name: 'Banheiro Social', usage: 28.1, percentage: 22 },
+                { name: 'Lavanderia', usage: 19.1, percentage: 15 }
+            ],
+            weeklyData: [
+                { day: 'Seg', usage: 145 },
+                { day: 'Ter', usage: 132 },
+                { day: 'Qua', usage: 128 },
+                { day: 'Qui', usage: 156 },
+                { day: 'Sex', usage: 134 },
+                { day: 'Sáb', usage: 167 },
+                { day: 'Dom', usage: 143 }
+            ],
+            alerts: [
+                { id: 1, type: 'warning', message: 'Uso elevado detectado no banheiro principal', time: '14:32' },
+                { id: 2, type: 'info', message: 'Relatório mensal disponível', time: '09:15' }
+            ]
+        };
 
-        // Variables for real-time data
-        let currentUsage = 2.3;
-        let dailyUsage = 127;
-        let monthlyUsage = 3420;
+        // Unit conversion functions
+        function litersToGallons(liters) {
+            return (liters * 0.264172).toFixed(1);
+        }
+
+        function gallonsToLiters(gallons) {
+            return (gallons * 3.78541).toFixed(1);
+        }
+
+        function formatValue(value, unit) {
+            if (unit === 'gal') {
+                return litersToGallons(value);
+            }
+            return value.toFixed(1);
+        }
+
+        function getUnitSymbol(unit) {
+            return unit === 'gal' ? 'gal' : 'L';
+        }
 
         // Navigation function
         function showPage(pageId) {
@@ -799,39 +1062,404 @@
             // Update navigation buttons
             const buttons = document.querySelectorAll('.nav-button');
             buttons.forEach(button => button.classList.remove('active'));
-            event.target.closest('.nav-button').classList.add('active');
+            
+            // Find and activate the clicked button
+            const activeButton = Array.from(buttons).find(button => 
+                button.onclick.toString().includes(pageId)
+            );
+            if (activeButton) {
+                activeButton.classList.add('active');
+            }
+
+            showToast(`Navegando para ${pageId === 'dashboard' ? 'Início' : pageId === 'analytics' ? 'Análises' : 'Configurações'}`);
         }
 
-        // Simulate real-time data updates
-        function updateData() {
+        // Update data display
+        function updateDisplay() {
+            const unit = appState.unit;
+            const unitSymbol = getUnitSymbol(unit);
+            
             // Update current usage
-            currentUsage = Math.max(0, currentUsage + (Math.random() - 0.5) * 0.5);
-            document.getElementById('current-usage').textContent = currentUsage.toFixed(1);
+            document.getElementById('current-usage').textContent = formatValue(appState.currentUsage, unit);
+            document.getElementById('current-unit').textContent = unitSymbol + '/min';
             
             // Update daily usage
-            dailyUsage += Math.random() * 0.1;
-            document.getElementById('daily-usage').textContent = Math.floor(dailyUsage) + ' L';
+            document.getElementById('daily-usage').textContent = formatValue(appState.dailyUsage, unit) + ' ' + unitSymbol;
+            
+            // Update weekly usage
+            document.getElementById('weekly-usage').textContent = formatValue(appState.weeklyUsage, unit) + ' ' + unitSymbol;
             
             // Update monthly usage
-            monthlyUsage += Math.random() * 0.01;
-            document.getElementById('monthly-usage').textContent = Math.floor(monthlyUsage) + ' L';
+            document.getElementById('monthly-usage').textContent = formatValue(appState.monthlyUsage, unit) + ' ' + unitSymbol;
+            document.getElementById('monthly-goal').textContent = formatValue(appState.monthlyGoal, unit) + ' ' + unitSymbol;
+            document.getElementById('goal-text').textContent = formatValue(appState.monthlyGoal, unit) + ' ' + unitSymbol;
             
             // Update goal percentage
-            const goalPercentage = Math.min(100, (monthlyUsage / 4000) * 100);
+            const goalPercentage = Math.min(100, (appState.monthlyUsage / appState.monthlyGoal) * 100);
             document.getElementById('goal-percentage').textContent = Math.floor(goalPercentage) + '%';
             document.getElementById('goal-progress').style.width = goalPercentage + '%';
+
+            // Update locations
+            updateLocations();
+            
+            // Update charts
+            updateCharts();
+            
+            // Update comparison
+            updateComparison();
+            
+            // Update alerts
+            updateAlerts();
         }
 
-        // Start real-time updates
-        setInterval(updateData, 2000);
+        // Update locations display
+        function updateLocations() {
+            const locationsList = document.getElementById('locations-list');
+            const unit = appState.unit;
+            const unitSymbol = getUnitSymbol(unit);
+            
+            locationsList.innerHTML = '';
+            
+            appState.locations.forEach(location => {
+                const locationDiv = document.createElement('div');
+                locationDiv.className = 'location-item';
+                locationDiv.onclick = () => showLocationModal(location);
+                
+                locationDiv.innerHTML = `
+                    <div class="location-info">
+                        <h4>${location.name}</h4>
+                        <p>${formatValue(location.usage, unit)} ${unitSymbol} hoje</p>
+                    </div>
+                    <div class="location-stats">
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${location.percentage}%"></div>
+                        </div>
+                        <div class="percentage">${location.percentage}%</div>
+                    </div>
+                `;
+                
+                locationsList.appendChild(locationDiv);
+            });
+        }
+
+        // Update weekly chart
+        function updateCharts() {
+            const weeklyChart = document.getElementById('weekly-chart');
+            const unit = appState.unit;
+            const unitSymbol = getUnitSymbol(unit);
+            
+            weeklyChart.innerHTML = '';
+            
+            const maxUsage = Math.max(...appState.weeklyData.map(day => day.usage));
+            
+            appState.weeklyData.forEach(day => {
+                const chartDiv = document.createElement('div');
+                chartDiv.className = 'chart-item';
+                chartDiv.onclick = () => showDayModal(day);
+                
+                const percentage = (day.usage / maxUsage) * 100;
+                const displayValue = formatValue(day.usage, unit);
+                
+                chartDiv.innerHTML = `
+                    <div class="chart-day">${day.day}</div>
+                    <div class="chart-bar">
+                        <div class="chart-fill" style="width: ${percentage}%">${displayValue}</div>
+                    </div>
+                `;
+                
+                weeklyChart.appendChild(chartDiv);
+            });
+        }
+
+        // Update comparison grid
+        function updateComparison() {
+            const comparisonGrid = document.getElementById('comparison-grid');
+            const unit = appState.unit;
+            const unitSymbol = getUnitSymbol(unit);
+            
+            const thisMonth = formatValue(appState.monthlyUsage, unit);
+            const lastMonth = formatValue(appState.monthlyUsage * 1.14, unit); // Simulated last month data
+            
+            comparisonGrid.innerHTML = `
+                <div class="comparison-item" onclick="showComparisonModal('thisMonth')">
+                    <div class="comparison-value">${thisMonth}</div>
+                    <div class="comparison-label">Este Mês</div>
+                </div>
+                <div class="comparison-item" onclick="showComparisonModal('lastMonth')">
+                    <div class="comparison-value">${lastMonth}</div>
+                    <div class="comparison-label">Mês Anterior</div>
+                </div>
+                <div class="comparison-item" onclick="showComparisonModal('savings')">
+                    <div class="comparison-value positive">-12%</div>
+                    <div class="comparison-label">Economia</div>
+                </div>
+            `;
+        }
+
+        // Update alerts
+        function updateAlerts() {
+            const alertsList = document.getElementById('alerts-list');
+            const alertCount = document.getElementById('alert-count');
+            
+            alertCount.textContent = appState.alerts.length;
+            alertsList.innerHTML = '';
+            
+            appState.alerts.forEach(alert => {
+                const alertDiv = document.createElement('div');
+                alertDiv.className = 'alert';
+                alertDiv.onclick = () => showAlertModal(alert);
+                
+                alertDiv.innerHTML = `
+                    <svg class="icon" viewBox="0 0 24 24">
+                        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                        <line x1="12" y1="9" x2="12" y2="13"/>
+                        <line x1="12" y1="17" x2="12.01" y2="17"/>
+                    </svg>
+                    <div class="alert-content">
+                        <div class="alert-message">${alert.message}</div>
+                        <div class="alert-time">${alert.time}</div>
+                    </div>
+                `;
+                
+                alertsList.appendChild(alertDiv);
+            });
+        }
+
+        // Refresh data function
+        function refreshData() {
+            appState.currentUsage = Math.max(0, appState.currentUsage + (Math.random() - 0.5) * 0.8);
+            appState.dailyUsage += Math.random() * 0.2;
+            appState.weeklyUsage += Math.random() * 0.1;
+            appState.monthlyUsage += Math.random() * 0.05;
+            
+            // Update location usage randomly
+            appState.locations.forEach(location => {
+                location.usage += Math.random() * 0.1;
+            });
+            
+            updateDisplay();
+            showToast('Dados atualizados!');
+        }
+
+        // Change unit function
+        function changeUnit() {
+            const newUnit = document.getElementById('unit-selector').value;
+            appState.unit = newUnit;
+            updateDisplay();
+            showToast(`Unidade alterada para ${newUnit === 'L' ? 'Litros' : 'Galões'}`);
+        }
+
+        // Update goal function
+        function updateGoal() {
+            const newGoal = parseFloat(document.getElementById('monthly-goal-input').value);
+            if (newGoal && newGoal > 0) {
+                appState.monthlyGoal = newGoal;
+                updateDisplay();
+                showToast('Meta mensal atualizada!');
+            }
+        }
+
+        // Save settings function
+        function saveSettings() {
+            appState.settings.alertHighUsage = document.getElementById('alert-high-usage').checked;
+            appState.settings.alertLeaks = document.getElementById('alert-leaks').checked;
+            appState.settings.weeklyReports = document.getElementById('weekly-reports').checked;
+            showToast('Configurações salvas!');
+        }
+
+        // Modal functions
+        function showModal(title, content) {
+            document.getElementById('modal-title').textContent = title;
+            document.getElementById('modal-body').innerHTML = content;
+            document.getElementById('modal').classList.add('show');
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.remove('show');
+        }
+
+        function showUsageModal() {
+            const unit = getUnitSymbol(appState.unit);
+            const content = `
+                <p><strong>Uso Atual:</strong> ${formatValue(appState.currentUsage, appState.unit)} ${unit}/min</p>
+                <p><strong>Consumo Hoje:</strong> ${formatValue(appState.dailyUsage, appState.unit)} ${unit}</p>
+                <p><strong>Status:</strong> Normal</p>
+                <p><strong>Última Atualização:</strong> Agora</p>
+                <hr style="margin: 16px 0;">
+                <p style="color: #6b7280; font-size: 14px;">
+                    O consumo atual está dentro dos parâmetros normais. Continue monitorando para identificar padrões de uso.
+                </p>
+            `;
+            showModal('Detalhes do Consumo Atual', content);
+        }
+
+        function showStatsModal(type) {
+            const unit = getUnitSymbol(appState.unit);
+            let title, content;
+            
+            if (type === 'week') {
+                title = 'Consumo Semanal';
+                content = `
+                    <p><strong>Total da Semana:</strong> ${formatValue(appState.weeklyUsage, appState.unit)} ${unit}</p>
+                    <p><strong>Média Diária:</strong> ${formatValue(appState.weeklyUsage / 7, appState.unit)} ${unit}</p>
+                    <p><strong>Comparação:</strong> 12% menor que a semana anterior</p>
+                    <p><strong>Melhor Dia:</strong> Quarta-feira</p>
+                `;
+            } else {
+                title = 'Consumo Mensal';
+                content = `
+                    <p><strong>Total do Mês:</strong> ${formatValue(appState.monthlyUsage, appState.unit)} ${unit}</p>
+                    <p><strong>Meta:</strong> ${formatValue(appState.monthlyGoal, appState.unit)} ${unit}</p>
+                    <p><strong>Progresso:</strong> ${Math.floor((appState.monthlyUsage / appState.monthlyGoal) * 100)}% da meta</p>
+                    <p><strong>Economia:</strong> 12% vs mês anterior</p>
+                `;
+            }
+            
+            showModal(title, content);
+        }
+
+        function showLocationModal(location) {
+            const unit = getUnitSymbol(appState.unit);
+            const content = `
+                <p><strong>Ambiente:</strong> ${location.name}</p>
+                <p><strong>Consumo Hoje:</strong> ${formatValue(location.usage, appState.unit)} ${unit}</p>
+                <p><strong>Porcentagem do Total:</strong> ${location.percentage}%</p>
+                <p><strong>Status:</strong> Normal</p>
+                <hr style="margin: 16px 0;">
+                <p style="color: #6b7280; font-size: 14px;">
+                    Este ambiente representa ${location.percentage}% do consumo total da residência.
+                </p>
+            `;
+            showModal(`Consumo - ${location.name}`, content);
+        }
+
+        function showDayModal(day) {
+            const unit = getUnitSymbol(appState.unit);
+            const content = `
+                <p><strong>Dia:</strong> ${day.day}</p>
+                <p><strong>Consumo:</strong> ${formatValue(day.usage, appState.unit)} ${unit}</p>
+                <p><strong>Comparação:</strong> ${day.usage > 140 ? 'Acima' : 'Dentro'} da média</p>
+                <p><strong>Pico de Uso:</strong> ${Math.floor(Math.random() * 12) + 6}:00h</p>
+            `;
+            showModal(`Consumo - ${day.day}`, content);
+        }
+
+        function showComparisonModal(type) {
+            const unit = getUnitSymbol(appState.unit);
+            let title, content;
+            
+            switch(type) {
+                case 'thisMonth':
+                    title = 'Este Mês';
+                    content = `
+                        <p><strong>Consumo:</strong> ${formatValue(appState.monthlyUsage, appState.unit)} ${unit}</p>
+                        <p><strong>Dias restantes:</strong> ${31 - new Date().getDate()}</p>
+                        <p><strong>Projeção:</strong> ${formatValue(appState.monthlyUsage * 1.1, appState.unit)} ${unit}</p>
+                    `;
+                    break;
+                case 'lastMonth':
+                    title = 'Mês Anterior';
+                    content = `
+                        <p><strong>Consumo:</strong> ${formatValue(appState.monthlyUsage * 1.14, appState.unit)} ${unit}</p>
+                        <p><strong>Média Diária:</strong> ${formatValue((appState.monthlyUsage * 1.14) / 30, appState.unit)} ${unit}</p>
+                        <p><strong>Pico:</strong> Dia 15</p>
+                    `;
+                    break;
+                case 'savings':
+                    title = 'Economia';
+                    content = `
+                        <p><strong>Economia:</strong> 12%</p>
+                        <p><strong>Volume Economizado:</strong> ${formatValue(appState.monthlyUsage * 0.12, appState.unit)} ${unit}</p>
+                        <p><strong>Valor Estimado:</strong> R$ 25,40</p>
+                        <p style="color: #10b981; margin-top: 12px;"><strong>Parabéns!</strong> Você está economizando água.</p>
+                    `;
+                    break;
+            }
+            
+            showModal(title, content);
+        }
+
+        function showAlertModal(alert) {
+            const content = `
+                <p><strong>Tipo:</strong> ${alert.type === 'warning' ? 'Aviso' : 'Informação'}</p>
+                <p><strong>Mensagem:</strong> ${alert.message}</p>
+                <p><strong>Horário:</strong> ${alert.time}</p>
+                <hr style="margin: 16px 0;">
+                <p style="color: #6b7280; font-size: 14px;">
+                    ${alert.type === 'warning' ? 
+                        'Verifique se há algum dispositivo em uso ou possível vazamento.' : 
+                        'Consulte o relatório na seção de análises.'}
+                </p>
+            `;
+            showModal('Detalhes do Alerta', content);
+        }
+
+        function editGoal() {
+            const newGoal = prompt(`Digite a nova meta mensal (${getUnitSymbol(appState.unit)}):`, appState.monthlyGoal);
+            if (newGoal && !isNaN(newGoal) && newGoal > 0) {
+                appState.monthlyGoal = parseFloat(newGoal);
+                updateDisplay();
+                showToast('Meta atualizada com sucesso!');
+            }
+        }
+
+        function toggleDevice() {
+            const statusElement = document.getElementById('device-status');
+            const isConnected = statusElement.textContent === 'Conectado';
+            statusElement.textContent = isConnected ? 'Desconectado' : 'Conectado';
+            statusElement.style.color = isConnected ? '#ef4444' : '#10b981';
+            showToast(`Dispositivo ${isConnected ? 'desconectado' : 'reconectado'}`);
+        }
+
+        // Toast notification function
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
 
         // Initialize the app
         document.addEventListener('DOMContentLoaded', function() {
-            // Create initial icons
-            lucide.createIcons();
+            // Load initial settings
+            document.getElementById('monthly-goal-input').value = appState.monthlyGoal;
             
-            // Start with dashboard page
-            showPage('dashboard');
+            // Update display
+            updateDisplay();
+            
+            // Start real-time updates
+            setInterval(refreshData, 3000);
+            
+            // Show welcome toast
+            setTimeout(() => showToast('Bem-vindo ao Flume Water!'), 500);
+        });
+
+        // Add keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            switch(e.key) {
+                case '1':
+                    showPage('dashboard');
+                    break;
+                case '2':
+                    showPage('analytics');
+                    break;
+                case '3':
+                    showPage('settings');
+                    break;
+                case 'Escape':
+                    closeModal();
+                    break;
+                case 'r':
+                case 'R':
+                    if (e.ctrlKey || e.metaKey) {
+                        e.preventDefault();
+                        refreshData();
+                    }
+                    break;
+            }
         });
     </script>
 </body>
