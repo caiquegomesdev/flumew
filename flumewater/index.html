@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flume Water - Monitor de Água</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/umd/lucide.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f9fafb;
+            color: #374151;
+        }
+
+        .container {
+            max-width: 448px;
+            margin: 0 auto;
+            min-height: 100vh;
+            background-color: #f9fafb;
+            position: relative;
+            padding-bottom: 80px;
+        }
+
+        .header {
+            background: white;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border-bottom: 1px solid #e5e7eb;
+            padding: 16px 24px;
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header h1 {
+            font-size: 20px;
+            font-weight: bold;
+            color: #111827;
+        }
+
+        .header p {
+            font-size: 14px;
+            color: #6b7280;
+        }
+
+        .status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            background: #10b981;
+            border-radius: 50%;
+        }
+
+        .status span {
+            font-size: 14px;
+            color: #6b7280;
+        }
+
+        .content {
+            padding: 24px;
+        }
+
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e5e7eb;
+            margin-bottom: 24px;
+        }
+
+        .current-usage {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+            margin-bottom: 24px;
+        }
+
+        .current-usage-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .current-usage-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .current-usage-value {
+            text-align: right;
+        }
+
+        .usage-large {
+            font-size: 48px;
+            font-weight: bold;
+            line-height: 1;
+        }
+
+        .usage-unit {
+            color: #dbeafe;
+            font-size: 14px;
+        }
+
+        .usage-today {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 16px;
+        }
+
+        .usage-today-label {
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+
+        .usage-today-value {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e5e7eb;
+        }
+
+        .stat-label {
+            color: #6b7280;
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #111827;
+        }
+
+        .stat-change {
+            display: flex;
+            align-items: center;
+            color: #10b981;
+            font-size: 14px;
+            margin-top: 4px;
+            gap: 4px;
+        }
+
+        .stat-meta {
+            color: #6b7280;
+            font-size: 14px;
+            margin-top: 4px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 16px;
+        }
+
+        .location-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        .location-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .location-info h4 {
+            font-weight: 500;
+            color: #111827;
+        }
+
+        .location-info p {
+            font-size: 14px;
+            color: #6b7280;
+        }
+
+        .location-stats {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .progress-bar {
+            width: 80px;
+            height: 8px;
+            background: #e5e7eb;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #3b82f6;
+            border-radius: 4px;
+        }
+
+        .percentage {
+            font-size: 14px;
+            font-weight: 500;
+            color: #6b7280;
+            width: 32px;
+            text-align: right;
+        }
+
+        .alert {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 12px;
+            background: #fef3c7;
+            border: 1px solid #fcd34d;
+            border-radius: 8px;
+            margin-bottom: 12px;
+        }
+
+        .alert:last-child {
+            margin-bottom: 0;
+        }
+
+        .alert-content {
+            flex: 1;
+        }
+
+        .alert-message {
+            font-size: 14px;
+            color: #111827;
+        }
+
+        .alert-time {
+            font-size: 12px;
+            color: #6b7280;
+            margin-top: 4px;
+        }
+
+        .weekly-chart {
+            margin-bottom: 16px;
+        }
+
+        .chart-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .chart-day {
+            width: 32px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #6b7280;
+        }
+
+        .chart-bar {
+            flex: 1;
+            height: 16px;
+            background: #e5e7eb;
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .chart-fill {
+            height: 100%;
+            background: #3b82f6;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 8px;
+            color: white;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 16px;
+            text-align: center;
+        }
+
+        .comparison-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #111827;
+        }
+
+        .comparison-value.positive {
+            color: #10b981;
+        }
+
+        .comparison-label {
+            font-size: 14px;
+            color: #6b7280;
+        }
+
+        .goal-item {
+            margin-bottom: 16px;
+        }
+
+        .goal-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .goal-bar {
+            width: 100%;
+            height: 12px;
+            background: #e5e7eb;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .goal-fill {
+            height: 100%;
+            background: #10b981;
+            border-radius: 6px;
+        }
+
+        .setting-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 0;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        .setting-item:last-child {
+            border-bottom: none;
+        }
+
+        .setting-info h4 {
+            font-weight: 500;
+            color: #111827;
+        }
+
+        .setting-info p {
+            font-size: 14px;
+            color: #6b7280;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 8px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        .device-card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px;
+            background: #ecfdf5;
+            border: 1px solid #bbf7d0;
+            border-radius: 8px;
+        }
+
+        .device-info h4 {
+            font-weight: 500;
+            color: #111827;
+        }
+
+        .device-info p {
+            font-size: 14px;
+            color: #10b981;
+        }
+
+        .device-status {
+            width: 12px;
+            height: 12px;
+            background: #10b981;
+            border-radius: 50%;
+        }
+
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 448px;
+            background: white;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+        }
+
+        .nav-button {
+            flex: 1;
+            padding: 12px 16px;
+            text-align: center;
+            border: none;
+            background: none;
+            color: #6b7280;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .nav-button.active {
+            color: #2563eb;
+        }
+
+        .nav-button i {
+            display: block;
+            width: 24px;
+            height: 24px;
+            margin: 0 auto 4px;
+        }
+
+        .nav-button span {
+            font-size: 12px;
+            display: block;
+        }
+
+        .checkbox {
+            width: 20px;
+            height: 20px;
+            accent-color: #2563eb;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                max-width: 100%;
+            }
+            
+            .content {
+                padding: 16px;
+            }
+            
+            .stats-grid {
+                gap: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-content">
+                <div>
+                    <h1>Flume</h1>
+                    <p>Monitor de Água</p>
+                </div>
+                <div class="status">
+                    <div class="status-dot"></div>
+                    <span>Online</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Content -->
+        <div class="content">
+            <!-- Dashboard Page -->
+            <div id="dashboard" class="page active">
+                <!-- Current Usage Card -->
+                <div class="card current-usage">
+                    <div class="current-usage-header">
+                        <div class="current-usage-title">
+                            <i data-lucide="droplets"></i>
+                            <span>Uso Atual</span>
+                        </div>
+                        <div class="current-usage-value">
+                            <div class="usage-large" id="current-usage">2.3</div>
+                            <div class="usage-unit">L/min</div>
+                        </div>
+                    </div>
+                    <div class="usage-today">
+                        <div class="usage-today-label">Consumo hoje</div>
+                        <div class="usage-today-value" id="daily-usage">127 L</div>
+                    </div>
+                </div>
+
+                <!-- Quick Stats -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">Esta Semana</div>
+                        <div class="stat-value">982 L</div>
+                        <div class="stat-change">
+                            <i data-lucide="trending-up"></i>
+                            -12% vs anterior
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Este Mês</div>
+                        <div class="stat-value" id="monthly-usage">3420 L</div>
+                        <div class="stat-meta">Meta: 4000 L</div>
+                    </div>
+                </div>
+
+                <!-- Usage by Location -->
+                <div class="card">
+                    <h3 class="section-title">Uso por Ambiente</h3>
+                    <div id="locations-list">
+                        <div class="location-item">
+                            <div class="location-info">
+                                <h4>Cozinha</h4>
+                                <p>34.2 L hoje</p>
+                            </div>
+                            <div class="location-stats">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 27%"></div>
+                                </div>
+                                <div class="percentage">27%</div>
+                            </div>
+                        </div>
+                        <div class="location-item">
+                            <div class="location-info">
+                                <h4>Banheiro Principal</h4>
+                                <p>45.6 L hoje</p>
+                            </div>
+                            <div class="location-stats">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 36%"></div>
+                                </div>
+                                <div class="percentage">36%</div>
+                            </div>
+                        </div>
+                        <div class="location-item">
+                            <div class="location-info">
+                                <h4>Banheiro Social</h4>
+                                <p>28.1 L hoje</p>
+                            </div>
+                            <div class="location-stats">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 22%"></div>
+                                </div>
+                                <div class="percentage">22%</div>
+                            </div>
+                        </div>
+                        <div class="location-item">
+                            <div class="location-info">
+                                <h4>Lavanderia</h4>
+                                <p>19.1 L hoje</p>
+                            </div>
+                            <div class="location-stats">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 15%"></div>
+                                </div>
+                                <div class="percentage">15%</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Alerts -->
+                <div class="card">
+                    <h3 class="section-title">
+                        <i data-lucide="bell"></i>
+                        Alertas Recentes
+                    </h3>
+                    <div class="alert">
+                        <i data-lucide="alert-triangle"></i>
+                        <div class="alert-content">
+                            <div class="alert-message">Uso elevado detectado no banheiro principal</div>
+                            <div class="alert-time">14:32</div>
+                        </div>
+                    </div>
+                    <div class="alert">
+                        <i data-lucide="alert-triangle"></i>
+                        <div class="alert-content">
+                            <div class="alert-message">Relatório mensal disponível</div>
+                            <div class="alert-time">09:15</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Analytics Page -->
+            <div id="analytics" class="page">
+                <div class="card">
+                    <h3 class="section-title">Consumo Semanal</h3>
+                    <div class="weekly-chart">
+                        <div class="chart-item">
+                            <div class="chart-day">Seg</div>
+                            <div class="chart-bar">
+                                <div class="chart-fill" style="width: 85%">145</div>
+                            </div>
+                        </div>
+                        <div class="chart-item">
+                            <div class="chart-day">Ter</div>
+                            <div class="chart-bar">
+                                <div class="chart-fill" style="width: 78%">132</div>
+                            </div>
+                        </div>
+                        <div class="chart-item">
+                            <div class="chart-day">Qua</div>
+                            <div class="chart-bar">
+                                <div class="chart-fill" style="width: 75%">128</div>
+                            </div>
+                        </div>
+                        <div class="chart-item">
+                            <div class="chart-day">Qui</div>
+                            <div class="chart-bar">
+                                <div class="chart-fill" style="width: 92%">156</div>
+                            </div>
+                        </div>
+                        <div class="chart-item">
+                            <div class="chart-day">Sex</div>
+                            <div class="chart-bar">
+                                <div class="chart-fill" style="width: 79%">134</div>
+                            </div>
+                        </div>
+                        <div class="chart-item">
+                            <div class="chart-day">Sáb</div>
+                            <div class="chart-bar">
+                                <div class="chart-fill" style="width: 98%">167</div>
+                            </div>
+                        </div>
+                        <div class="chart-item">
+                            <div class="chart-day">Dom</div>
+                            <div class="chart-bar">
+                                <div class="chart-fill" style="width: 84%">143</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3 class="section-title">Comparativo Mensal</h3>
+                    <div class="comparison-grid">
+                        <div>
+                            <div class="comparison-value">3,420</div>
+                            <div class="comparison-label">Este Mês</div>
+                        </div>
+                        <div>
+                            <div class="comparison-value">3,890</div>
+                            <div class="comparison-label">Mês Anterior</div>
+                        </div>
+                        <div>
+                            <div class="comparison-value positive">-12%</div>
+                            <div class="comparison-label">Economia</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3 class="section-title">Metas de Economia</h3>
+                    <div class="goal-item">
+                        <div class="goal-header">
+                            <span>Meta Mensal (4000 L)</span>
+                            <span id="goal-percentage">86%</span>
+                        </div>
+                        <div class="goal-bar">
+                            <div class="goal-fill" id="goal-progress" style="width: 86%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings Page -->
+            <div id="settings" class="page">
+                <div class="card">
+                    <h3 class="section-title">Configurações de Alerta</h3>
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h4>Uso Elevado</h4>
+                            <p>Alertar quando uso exceder limite</p>
+                        </div>
+                        <input type="checkbox" class="checkbox" checked>
+                    </div>
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h4>Vazamentos</h4>
+                            <p>Detectar possíveis vazamentos</p>
+                        </div>
+                        <input type="checkbox" class="checkbox" checked>
+                    </div>
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h4>Relatórios Semanais</h4>
+                            <p>Receber resumo por email</p>
+                        </div>
+                        <input type="checkbox" class="checkbox">
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3 class="section-title">Preferências</h3>
+                    <div class="form-group">
+                        <label class="form-label">Unidade de Medida</label>
+                        <select class="form-control">
+                            <option>Litros (L)</option>
+                            <option>Galões (gal)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Meta Mensal de Consumo</label>
+                        <input type="number" class="form-control" placeholder="4000">
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3 class="section-title">Dispositivos</h3>
+                    <div class="device-card">
+                        <div class="device-info">
+                            <h4>Sensor Principal</h4>
+                            <p>Conectado</p>
+                        </div>
+                        <div class="device-status"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Navigation -->
+        <div class="bottom-nav">
+            <button class="nav-button active" onclick="showPage('dashboard')">
+                <i data-lucide="home"></i>
+                <span>Início</span>
+            </button>
+            <button class="nav-button" onclick="showPage('analytics')">
+                <i data-lucide="bar-chart-3"></i>
+                <span>Análises</span>
+            </button>
+            <button class="nav-button" onclick="showPage('settings')">
+                <i data-lucide="settings"></i>
+                <span>Configurações</span>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+        // Variables for real-time data
+        let currentUsage = 2.3;
+        let dailyUsage = 127;
+        let monthlyUsage = 3420;
+
+        // Navigation function
+        function showPage(pageId) {
+            // Hide all pages
+            const pages = document.querySelectorAll('.page');
+            pages.forEach(page => page.classList.remove('active'));
+            
+            // Show selected page
+            document.getElementById(pageId).classList.add('active');
+            
+            // Update navigation buttons
+            const buttons = document.querySelectorAll('.nav-button');
+            buttons.forEach(button => button.classList.remove('active'));
+            event.target.closest('.nav-button').classList.add('active');
+        }
+
+        // Simulate real-time data updates
+        function updateData() {
+            // Update current usage
+            currentUsage = Math.max(0, currentUsage + (Math.random() - 0.5) * 0.5);
+            document.getElementById('current-usage').textContent = currentUsage.toFixed(1);
+            
+            // Update daily usage
+            dailyUsage += Math.random() * 0.1;
+            document.getElementById('daily-usage').textContent = Math.floor(dailyUsage) + ' L';
+            
+            // Update monthly usage
+            monthlyUsage += Math.random() * 0.01;
+            document.getElementById('monthly-usage').textContent = Math.floor(monthlyUsage) + ' L';
+            
+            // Update goal percentage
+            const goalPercentage = Math.min(100, (monthlyUsage / 4000) * 100);
+            document.getElementById('goal-percentage').textContent = Math.floor(goalPercentage) + '%';
+            document.getElementById('goal-progress').style.width = goalPercentage + '%';
+        }
+
+        // Start real-time updates
+        setInterval(updateData, 2000);
+
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', function() {
+            // Create initial icons
+            lucide.createIcons();
+            
+            // Start with dashboard page
+            showPage('dashboard');
+        });
+    </script>
+</body>
+</html>
